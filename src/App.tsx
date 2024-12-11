@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchTasks } from "./services/api";
+import { addTask, delTask, fetchTasks } from "./services/api";
 import DetailTask from "./component/detail_task";
+
+import { FaBookOpen } from "react-icons/fa";
+import { MdEditSquare, MdDelete } from "react-icons/md";
 
 function App() {
   interface Task {
@@ -16,6 +19,8 @@ function App() {
     tasks: Task[];
     totalTask: number;
   }
+
+  const [counter, setCounter] = useState(0);
 
   const [datas, setDatas] = useState<FetchReturn>({
     tasks: [],
@@ -41,12 +46,12 @@ function App() {
       }
     };
     getTasks();
-  }, []);
+  }, [counter]);
 
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
-  const showAction = (detail: Task) => {
-    if (!showDetail) {
+  const showAction = (detail?: Task) => {
+    if (!showDetail && detail) {
       setDetail(detail);
     } else {
       setDetail({
@@ -61,17 +66,59 @@ function App() {
     setShowDetail(!showDetail);
   };
 
+  const delAction = async (id: string) => {
+    try {
+      const response = await delTask(id);
+
+      if (response.success.toString() == "false") {
+        alert("Gagal hapus data");
+      } else {
+        alert("Berhasil hapus data");
+        setCounter(counter + 1);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    dueDate: "2024-10-12",
+  });
+
+  const inputHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((formData) => ({
+      ...formData,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const submitHandler = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const response = await addTask(formData);
+    if (!response.success) {
+      alert("Fail to add task");
+    } else {
+      alert("Task added succesfully");
+      setCounter(counter + 1);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center min-h-screen p-4 gap-8">
-      {showDetail ? <DetailTask datas={detail} /> : null}
-      <form className="border rounded-xl w-fit flex flex-col gap-4 p-3 shadow-xl *:flex *:flex-col *:items-start">
+      {showDetail ? <DetailTask datas={detail} action={showAction} /> : null}
+      <form
+        onSubmit={submitHandler}
+        className="border rounded-xl w-fit flex flex-col gap-4 p-3 shadow-xl *:flex *:flex-col *:items-start"
+      >
         <div>
           <label htmlFor="Title">Task Title</label>
-          <input type="text" name="title" />
+          <input type="text" name="title" onChange={inputHandler} />
         </div>
         <div>
           <label htmlFor="Description">Task Description</label>
-          <input type="text" name="description" />
+          <input type="text" name="description" onChange={inputHandler} />
         </div>
         <button className="bg-green-600 text-white px-2 rounded mx-auto">
           Add Task
@@ -97,11 +144,22 @@ function App() {
               <td>{task.description}</td>
               <td>{task.dueDate}</td>
               <td>{task.status}</td>
-              <td>
-                {showDetail.toString()}
-                <button onClick={() => showAction(task)}>Detail</button>
-                <button>Edit</button>
-                <button>Delete</button>
+              <td className="*:p-1 rounded flex gap-2">
+                <button
+                  onClick={() => showAction(task)}
+                  className="bg-yellow-300"
+                >
+                  <FaBookOpen />
+                </button>
+                <button className="bg-green-300">
+                  <MdEditSquare />
+                </button>
+                <button
+                  onClick={() => delAction(task.id)}
+                  className="bg-red-600"
+                >
+                  <MdDelete />
+                </button>
               </td>
             </tr>
           ))}
