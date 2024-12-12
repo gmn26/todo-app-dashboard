@@ -4,6 +4,7 @@ import DetailTask from "./component/detail_task";
 
 import { FaBookOpen } from "react-icons/fa";
 import { MdEditSquare, MdDelete } from "react-icons/md";
+import EditTask from "./component/edit_task";
 
 function App() {
   interface Task {
@@ -49,8 +50,9 @@ function App() {
   }, [counter]);
 
   const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [showEditState, setShowEditState] = useState<boolean>(false);
 
-  const showAction = (detail?: Task) => {
+  const showDetailAction = (detail?: Task) => {
     if (!showDetail && detail) {
       setDetail(detail);
     } else {
@@ -64,6 +66,38 @@ function App() {
       });
     }
     setShowDetail(!showDetail);
+  };
+
+  const showEditAction = (detail?: Task) => {
+    if (!showEditState && detail) {
+      setDetail(detail);
+    } else {
+      setDetail({
+        id: "",
+        title: "",
+        description: "",
+        dueDate: "",
+        status: "",
+        createdAt: "",
+      });
+    }
+    setShowEditState(!showEditState);
+  };
+
+  const showEdit = (detail?: Task) => {
+    if (!showEditState && detail) {
+      setDetail(detail);
+    } else {
+      setDetail({
+        id: "",
+        title: "",
+        description: "",
+        dueDate: "",
+        status: "",
+        createdAt: "",
+      });
+    }
+    setShowEditState(!showDetail);
   };
 
   const delAction = async (id: string) => {
@@ -101,13 +135,26 @@ function App() {
       alert("Fail to add task");
     } else {
       alert("Task added succesfully");
-      setCounter(counter + 1);
+      updateCounter();
     }
+  };
+
+  const updateCounter = () => {
+    setCounter(counter + 1);
   };
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 gap-8">
-      {showDetail ? <DetailTask datas={detail} action={showAction} /> : null}
+      {showDetail ? (
+        <DetailTask datas={detail} action={showDetailAction} />
+      ) : null}
+      {showEditState ? (
+        <EditTask
+          datas={detail}
+          action={showEditAction}
+          update={updateCounter}
+        />
+      ) : null}
       <form
         onSubmit={submitHandler}
         className="border rounded-xl w-fit flex flex-col gap-4 p-3 shadow-xl *:flex *:flex-col *:items-start"
@@ -146,12 +193,12 @@ function App() {
               <td>{task.status}</td>
               <td className="*:p-1 rounded flex gap-2">
                 <button
-                  onClick={() => showAction(task)}
+                  onClick={() => showDetailAction(task)}
                   className="bg-yellow-300"
                 >
                   <FaBookOpen />
                 </button>
-                <button className="bg-green-300">
+                <button onClick={() => showEdit(task)} className="bg-green-300">
                   <MdEditSquare />
                 </button>
                 <button

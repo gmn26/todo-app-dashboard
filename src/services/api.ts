@@ -77,6 +77,26 @@ export const addTask = async (bodyReq: AddTask): Promise<AddReturn> => {
     }
 }
 
+export const editTask = async (id: string, bodyReq: AddTask): Promise<AddReturn> => {
+    try {
+        const body = JSON.stringify(bodyReq);
+
+        const response = await fetch(URI + "/edit/" + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body
+        });
+
+        const resp = await response.json();
+        return resp;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 export const delTask = async (id: string): Promise<DelReturn> => {
     try {
         const response = await fetch(URI + "/del/" + id, {
